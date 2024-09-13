@@ -7,7 +7,7 @@ Para visualizar a documentação OpenAPI, cole o conteúdo do arquivo openapi.ya
 https://editor.swagger.io/
 
 
-Cadastrar cliente
+Cadastrar cliente (endpoint público)
 ```
 curl --request POST \
   --url https://{{host}}/Prod/sign-up/ \
@@ -21,7 +21,7 @@ curl --request POST \
 }'
 ```
 
-Autenticar Cliente
+Autenticar cliente (endpoint público)
 ```
 curl --request POST \
   --url https://b43i2lpdeb.execute-api.us-east-1.amazonaws.com/Prod/sign-in/ \
@@ -33,7 +33,7 @@ curl --request POST \
 }'
 ```
 
-Buscar informações de cadastro do cliente.
+Buscar informações de cadastro do cliente (endpoint protegido com authorizador do cognito)
 ```
 curl --request GET \
   --url https://vpd4ohexlf.execute-api.us-east-1.amazonaws.com/Prod/user-info/ \
