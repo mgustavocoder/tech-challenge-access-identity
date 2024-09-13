@@ -1,0 +1,11 @@
+{
+  "name": "tech-challenge-access-identity",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {},
+  "dependencies": {
+    "aws-sdk": "^2.1691.0",
+    "crypto": "^1.0.1",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

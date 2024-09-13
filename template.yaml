@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  tech-challenge-access-identity
+
+  Sample SAM Template for tech-challenge-access-identity
+  
+Globals:
+  Function:
+    Timeout: 3
+
+#Parameters:
+#  ClientId:
+#    Type: String
+#    Description: "Cognito Client ID"
+#  UserPoolId:
+#    Type: String
+#    Description: "Cognito User Pool ID"
+
+Resources:
+  MyCognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: "Tech Challenge"
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      UsernameAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+        - AttributeDataType: String
+          Name: name
+          Required: true
+        - AttributeDataType: String
+          Name: cpf
+
+  MyCognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: "tc-fiap"
+      UserPoolId: !Ref MyCognitoUserPool
+
+  MyCognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref MyCognitoUserPool
+      ClientName: tc-fiap-client
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+      CallbackURLs:
+        - "https://example.com/"
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - phone
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthFlowsUserPoolClient: true
+
+  ProtectedApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors: "'*'"
+      Auth:
+        DefaultAuthorizer: MyCognitoAuthorizer
+        Authorizers:
+          MyCognitoAuthorizer:
+            UserPoolArn: !GetAtt MyCognitoUserPool.Arn
+  
+  PublicApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors: "'*'"
+
+  UserInfoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handlers/
+      Handler: user-info.lambdaHandler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Events:
+        Identify:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProtectedApi
+            Path: /user-info
+            Method: get
+      Environment:
+        Variables:
+          CLIENT_ID: !Ref MyCognitoUserPoolClient
+          USER_POOL_ID: !Ref MyCognitoUserPool
+
+  SignUpFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handlers/
+      Handler: sign-up.lambdaHandler
+      Runtime: nodejs20.x
+      Policies:
+        - AWSLambdaExecute
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:*
+              Resource: "*"
+      Architectures:
+        - x86_64
+      Events:
+        Identify:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicApi
+            Path: /sign-up
+            Method: post
+      Environment:
+        Variables:
+          CLIENT_ID: !Ref MyCognitoUserPoolClient
+          USER_POOL_ID: !Ref MyCognitoUserPool
+
+  SignInFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handlers/
+      Handler: sign-in.lambdaHandler
+      Runtime: nodejs20.x
+      Policies:
+        - AWSLambdaExecute
+        - Version: '2012-10-17' 
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:*
+              Resource: "*"
+      Architectures:
+        - x86_64
+      Events:
+        Identify:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PublicApi
+            Path: /sign-in
+            Method: post
+      Environment:
+        Variables:
+          CLIENT_ID: !Ref MyCognitoUserPoolClient
+          USER_POOL_ID: !Ref MyCognitoUserPool
+
+Outputs:
+  UserInfoApi:
+    Description: "API Gateway endpoint URL for Prod stage for User Info function"
+    Value: !Sub "https://${ProtectedApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/user-info/"
+  SignUpApi:
+    Description: "API Gateway endpoint URL for Prod stage for Sign In function"
+    Value: !Sub "https://${PublicApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/sign-up/"
+  SignInApi:
+    Description: "API Gateway endpoint URL for Prod stage for Sign Up function"
+    Value: !Sub "https://${PublicApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/sign-in/"
+  CognitoUserPoolId:
+    Description: "The ID of the Cognito User Pool"
+    Value: !Ref MyCognitoUserPool
+  CognitoClientId:
+    Description: "The Client ID for the Cognito User Pool"
+    Value: !Ref MyCognitoUserPoolClient
