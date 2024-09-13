@@ -1,4 +1,4 @@
-name: Delete SAM Stack
+name: Delete SAM Application
 
 on:
   workflow_dispatch:
