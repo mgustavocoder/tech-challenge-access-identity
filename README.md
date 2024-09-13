@@ -3,7 +3,7 @@ API para cadastrar, autenticar e buscar informações dos clientes.
 API rodando em funções Lambda, utilizando Cognito e API Gateway.
 
 
-Para visualizar a documentação OpenAPI, 
+Para visualizar a documentação OpenAPI, cole o conteúdo do arquivo openapi.yaml no seguinte site:
 https://editor.swagger.io/
 
 
