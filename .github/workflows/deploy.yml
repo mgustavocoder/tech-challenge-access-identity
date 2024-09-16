@@ -25,6 +25,7 @@ jobs:
 
       - name: Bulid application
         run: |
+          cd handlers
           npm install
 
       - name: Deploy SAM Application
