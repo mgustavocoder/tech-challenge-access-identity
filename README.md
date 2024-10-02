@@ -3,6 +3,11 @@ API para cadastrar, autenticar e buscar informações dos clientes.
 API rodando em funções Lambda, utilizando Cognito e API Gateway.
 
 
+Para o processo de deploy funcionar, é preciso adicionar as credenciais da AWS nos secrets, conforme imagem abaixo.
+
+<img width="798" alt="Captura de Tela 2024-10-02 às 11 07 26" src="https://github.com/user-attachments/assets/9daeeb56-811d-404f-b3ba-eac489f0239a">
+
+
 Para visualizar a documentação OpenAPI, cole o conteúdo do arquivo openapi.yaml no seguinte site:
 https://editor.swagger.io/
 
